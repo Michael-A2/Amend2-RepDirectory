@@ -1,0 +1,24 @@
+name: Fetch Rep Directory
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'   # 1st of every month, midnight UTC
+  workflow_dispatch:        # lets you trigger it manually anytime
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download rep directory CSV
+        run: |
+          curl -sL -o rep_directory.csv "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkdy0iH65M72zqTHF9kKXIrujFc5HLG_dXPD03bUvbpY6p7cYAYjIXW4pQEV7MtA/pub?output=csv"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rep_directory.csv
+          git diff --staged --quiet || git commit -m "Monthly rep directory refresh"
+          git push
